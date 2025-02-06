@@ -1,5 +1,5 @@
 import { generateTokenAndSetCookie } from "../utils/Token.js";
-import User from "../models/auth.model.js";
+import User from "../models/user.model.js";
 import bcrypt from 'bcryptjs';
 
 export const signupController = async(req,res)=>{
@@ -37,7 +37,7 @@ export const signupController = async(req,res)=>{
 			generateTokenAndSetCookie(newUser._id, res);
 			await newUser.save();
 
-			res.status(201).json({
+			 return res.status(201).json({
 				_id: newUser._id,
 				fullName: newUser.fullName,
 				username: newUser.username,
@@ -48,12 +48,12 @@ export const signupController = async(req,res)=>{
 				coverImg: newUser.coverImg,
 			});
 		} else {
-			res.status(400).json({ message: "Invalid user data" });
+			 return res.status(400).json({ message: "Invalid user data" });
 		}
 
     }catch(error){
         console.log("Error :",error);
-        res.status(500).json({ message:"Internal server Error"});
+        return res.status(500).json({ message:"Internal server Error"});
     }
 };
 
@@ -80,7 +80,7 @@ export const loginController = async(req,res)=>{
 
 		generateTokenAndSetCookie(user._id, res);
 
-		res.status(200).json({
+		 return res.status(200).json({
 			_id: user._id,
 			fullName: user.fullName,
 			username: user.username,
@@ -93,28 +93,28 @@ export const loginController = async(req,res)=>{
 
     }catch(error){
         console.log("Error :",error);
-        res.status(500).json({ message:"Internal server Error"});
+         return res.status(500).json({ message:"Internal server Error"});
     }
 };
 
 export const logoutController = async(req,res)=>{
     try{
 		res.clearCookie("jwt");
-        res.status(200).json({ message:"logout successfully"});
+       return  res.status(200).json({ message:"logout successfully"});
 
     }catch(error){
         console.log("Error :",error);
-        res.status(500).json({ message:"Internal server Error"});
+        return  res.status(500).json({ message:"Internal server Error"});
     }
 };
 
 export const checkauth = async(req,res)=>{
     try{
 		const user= req.user;
-        res.status(200).json({ message:"authorized user"});
+         return res.status(200).json({ message:"authorized user"});
 
     }catch(error){
         console.log("Error :",error);
-        res.status(500).json({ message:"Internal server Error"});
+         return res.status(500).json({ message:"Internal server Error"});
     }
 };
