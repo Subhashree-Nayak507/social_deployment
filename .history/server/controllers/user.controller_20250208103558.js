@@ -1,6 +1,6 @@
 import Notification from "../models/notification.model.js";
 import User from "../models/user.model.js";
-import cloudinary from "../utils/cloudinary.js";
+import { v2 as cloudinary } from "cloudinary";
 import bcrypt from "bcryptjs";
 
 export const getProfileController = async(req,res)=>{
@@ -92,42 +92,33 @@ export const updateProfileController= async(req,res)=>{
 
         if ((!newPassword && currentPassword) || (!currentPassword && newPassword)) {
 			return res.status(400).json({ error: "Please provide both current password and new password" });
-		};
-
+		}
         if (currentPassword && newPassword) {
 			const isMatch = await bcrypt.compare(currentPassword, user.password);
 			if (!isMatch) return res.status(400).json({ error: "Current password is incorrect" });
 			if (newPassword.length < 6) {
 				return res.status(400).json({ error: "Password must be at least 6 characters long" });
 			}
+
 			const salt = await bcrypt.genSalt(10);
 			user.password = await bcrypt.hash(newPassword, salt);
 		};
 
-        if ( req.files.profileImg) {
-           // console.log(req.files);
-            try {
-                if (user.profileImg) {
-                    const publicId = user.profileImg.split("/").pop().split(".")[0];
-                    await cloudinary.uploader.destroy(publicId);
-                }
-                user.profileImg = req.files.profileImg[0].path;
-            } catch (error) {
-                console.error("Error handling profile image:", error);
-            }
-        }
+        if (profileImg) {
+			if (user.profileImg) {
+				await cloudinary.uploader.destroy(user.profileImg.split("/").pop().split(".")[0]);
+			}
+			const uploadedResponse = await cloudinary.uploader.upload(profileImg);
+			profileImg = uploadedResponse.secure_url;
+		};
 
-        if ( req.files.coverImg) {
-            try {
-                if (user.coverImg) {
-                    const publicId = user.coverImg.split("/").pop().split(".")[0];
-                    await cloudinary.uploader.destroy(publicId);
-                }
-                user.coverImg = req.files.coverImg[0].path;
-            } catch (error) {
-                console.error("Error handling cover image:", error);
-            }
-        }
+		if (coverImg) {
+			if (user.coverImg) {
+				await cloudinary.uploader.destroy(user.coverImg.split("/").pop().split(".")[0]);
+			}
+			const uploadedResponse = await cloudinary.uploader.upload(coverImg);
+			coverImg = uploadedResponse.secure_url;
+		}
 
 		user.fullName = fullName || user.fullName;
 		user.email = email || user.email;

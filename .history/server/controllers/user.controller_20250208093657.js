@@ -1,6 +1,6 @@
 import Notification from "../models/notification.model.js";
 import User from "../models/user.model.js";
-import cloudinary from "../utils/cloudinary.js";
+import { v2 as cloudinary } from "cloudinary";
 import bcrypt from "bcryptjs";
 
 export const getProfileController = async(req,res)=>{
@@ -85,18 +85,18 @@ export const updateProfileController= async(req,res)=>{
         const { fullName, email, username, currentPassword, newPassword, bio, link } = req.body;
         let { profileImg, coverImg } = req.body;
     
-        let user = await User.findById(req.user._id);
-       // console.log(user);
+        let user = req.user._id;
+        console.log(user);
         if (!user) 
             return res.status(404).json({ message: "User not found" });
 
         if ((!newPassword && currentPassword) || (!currentPassword && newPassword)) {
 			return res.status(400).json({ error: "Please provide both current password and new password" });
-		};
-
+		}
         if (currentPassword && newPassword) {
 			const isMatch = await bcrypt.compare(currentPassword, user.password);
-			if (!isMatch) return res.status(400).json({ error: "Current password is incorrect" });
+			if (!isMatch) 
+                return res.status(400).json({ error: "Current password is incorrect" });
 			if (newPassword.length < 6) {
 				return res.status(400).json({ error: "Password must be at least 6 characters long" });
 			}
@@ -104,30 +104,23 @@ export const updateProfileController= async(req,res)=>{
 			user.password = await bcrypt.hash(newPassword, salt);
 		};
 
-        if ( req.files.profileImg) {
-           // console.log(req.files);
+        if (profileImg) {
             try {
-                if (user.profileImg) {
-                    const publicId = user.profileImg.split("/").pop().split(".")[0];
-                    await cloudinary.uploader.destroy(publicId);
-                }
-                user.profileImg = req.files.profileImg[0].path;
-            } catch (error) {
-                console.error("Error handling profile image:", error);
+              const uploadedResponse = await cloudinary.uploader.upload(profileImg);
+              profileImg = uploadedResponse.secure_url;
+            } catch (err) {
+              console.log("Cloudinary upload failed:", err);
+              return res.status(500).json({ message: "Image upload failed" });
             }
-        }
+          }
 
-        if ( req.files.coverImg) {
-            try {
-                if (user.coverImg) {
-                    const publicId = user.coverImg.split("/").pop().split(".")[0];
-                    await cloudinary.uploader.destroy(publicId);
-                }
-                user.coverImg = req.files.coverImg[0].path;
-            } catch (error) {
-                console.error("Error handling cover image:", error);
-            }
-        }
+		if (coverImg) {
+			if (user.coverImg) {
+				await cloudinary.uploader.destroy(user.coverImg.split("/").pop().split(".")[0]);
+			}
+			const uploadedResponse = await cloudinary.uploader.upload(coverImg);
+			coverImg = uploadedResponse.secure_url;
+		}
 
 		user.fullName = fullName || user.fullName;
 		user.email = email || user.email;
@@ -140,15 +133,11 @@ export const updateProfileController= async(req,res)=>{
 		user = await user.save();
 		user.password = null;
 
-		return res.status(200).json({
-            messsage:"  user profile  updated successfully",
-            user
-        });
+		return res.status(200).json(user);
 
     }catch(error){
         console.log("Error :",error);
-        return  res.status(500).json({
-             message:"Internal server Error"});
+        return  res.status(500).json({ message:"Internal server Error"});
     }
 };
 
@@ -167,10 +156,7 @@ export const searchUserController = async(req,res)=>{
         return res.status(404).json({ message: "No users found." });
       };
 
-      return res.status(200).json({
-        messsage:" Found user profile  successfully",
-         users 
-        });
+      return res.status(200).json({ users });
     }catch(error){
         console.log("Error :",error);
         return  res.status(500).json({ message:"Internal server Error"});

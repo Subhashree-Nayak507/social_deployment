@@ -104,8 +104,7 @@ export const updateProfileController= async(req,res)=>{
 			user.password = await bcrypt.hash(newPassword, salt);
 		};
 
-        if ( req.files.profileImg) {
-           // console.log(req.files);
+        if (req.files && req.files.profileImg) {
             try {
                 if (user.profileImg) {
                     const publicId = user.profileImg.split("/").pop().split(".")[0];
@@ -117,7 +116,7 @@ export const updateProfileController= async(req,res)=>{
             }
         }
 
-        if ( req.files.coverImg) {
+        if (req.files && req.files.coverImg) {
             try {
                 if (user.coverImg) {
                     const publicId = user.coverImg.split("/").pop().split(".")[0];
