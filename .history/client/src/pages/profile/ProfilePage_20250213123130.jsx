@@ -162,13 +162,13 @@ const ProfilePage = () => {
                                 <div className='avatar absolute -bottom-16 left-4'>
                                     <div className='w-32 rounded-full relative group/avatar'>
                                         <img src={profileImg || user?.checkUser.profileImg || "/noDp.png"} />
-                                        <div className='absolute top-5 right-3 p-1 bg-primary rounded-full group-hover/avatar:opacity-100
-                                         opacity-0 cursor-pointer'>
+                                        <div className='absolute top-5 right-3 p-1 bg-primary rounded-full group-hover/avatar:opacity-100 opacity-0 cursor-pointer'>
                                             {isMyProfile && (
                                                 <MdEdit
-                                                    className='w-4 h-4 text-white '
+                                                    className='w-4 h-4 text-white text-sm sm:hidden'
                                                     onClick={() => profileImgRef.current.click()}
                                                 />
+                                               
                                             )}
                                             
                                         </div>
