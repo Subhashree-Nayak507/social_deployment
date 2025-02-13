@@ -116,6 +116,7 @@ export const updateProfileFilesController = async (req, res) => {
             }
         }
 
+        // Handle Cover Image Upload
         if (req.files && req.files.coverImg && req.files.coverImg[0]) {
             try {
                 if (user.coverImg) {

@@ -37,7 +37,6 @@ const EditProfileModal = () => {
 				if (formData.link !== authUser.user.link) {
 				  updatedFields.link = formData.link;
 				}
-
 				if (formData.newPassword && formData.currentPassword) {
 				  updatedFields.newPassword = formData.newPassword;
 				  updatedFields.currentPassword = formData.currentPassword;
@@ -49,6 +48,7 @@ const EditProfileModal = () => {
 				throw new Error(error.message);
 			}
 		},
+		
 		onSuccess: () => {
 			toast.success("Profile updated successfully");
 			Promise.all([
@@ -59,11 +59,7 @@ const EditProfileModal = () => {
 				...prev,
 				newPassword: "",
 				currentPassword: "",
-			  }));
-			  const modal = document.getElementById("edit_profile_modal");
-			  if (modal) {
-				modal.close();
-			  }
+			  }))
 		},
 		onError: (error) => {
 			toast.error(error.message);
@@ -78,11 +74,11 @@ const EditProfileModal = () => {
 		if (authUser) {
 		  setFormData(prevData => ({
 			...prevData,
-			fullName: authUser.user.fullName || "",
-			username: authUser.user.username || "",
-			email: authUser.user.email || "",
-			bio: authUser.user.bio || "",
-			link: authUser.user.link || "",
+			fullName: authUser.fullName || "",
+			username: authUser.username || "",
+			email: authUser.email || "",
+			bio: authUser.bio || "",
+			link: authUser.link || "",
 			newPassword: "",
 			currentPassword: "",
 		  }));

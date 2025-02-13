@@ -64,7 +64,7 @@ const ProfilePage = () => {
                 if (coverImg?.file) {
                     formDataToSend.append("coverImg", coverImg.file);
                 }
-				const res = await axios.post(`/api/user/updateProfileFiles`, formDataToSend, {
+				const res = await axios.post(`/api/user/updateProfile`, formDataToSend, {
 					headers: { 
 						"Content-Type": "multipart/form-data"
 					}
@@ -194,7 +194,7 @@ const ProfilePage = () => {
                                 )}
                             </div>
 
-                            <div className='flex flex-col gap-4 mt-14 px-4 '>
+                            <div className='flex flex-col gap-4 mt-14 px-4'>
                                 <div className='flex flex-col'>
                                     <span className='font-bold text-lg'>{user?.checkUser.fullName}</span>
                                     <span className='text-sm text-slate-500'>@{user?.checkUser.username}</span>

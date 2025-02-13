@@ -116,6 +116,7 @@ export const updateProfileFilesController = async (req, res) => {
             }
         }
 
+        // Handle Cover Image Upload
         if (req.files && req.files.coverImg && req.files.coverImg[0]) {
             try {
                 if (user.coverImg) {
@@ -166,18 +167,21 @@ export const updateProfileDataController = async (req, res) => {
                 error: "Please provide both current password and new password" 
             });
         }
+        console.log("new password",newPassword);
+        console.log("current password",newPassword);
         if (currentPassword && newPassword) {
             const isMatch = await bcrypt.compare(currentPassword, user.password);
-           // console.log("Password match result:", isMatch);
             if (!isMatch) {
                 return res.status(400).json({ error: "Current password is incorrect" });
             }
             if (newPassword.length < 6) {
-                return res.status(400).json({
-                    error: "Password must be at least 6 characters long"
+                return res.status(400).json({ 
+                    error: "Password must be at least 6 characters long" 
                 });
             }
-            user.password = newPassword;
+            const salt = await bcrypt.genSalt(10);
+            user.password = await bcrypt.hash(newPassword, salt);
+            console.log(" hashed new password",user.password);
         }
 
         if ('fullName' in req.body) user.fullName = fullName;

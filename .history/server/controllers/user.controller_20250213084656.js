@@ -100,6 +100,7 @@ export const updateProfileFilesController = async (req, res) => {
             return res.status(404).json({ message: "User not found" });
         }
 
+        // Handle Profile Image Upload
         if (req.files && req.files.profileImg && req.files.profileImg[0]) {
             try {
                 if (user.profileImg) {
@@ -116,6 +117,7 @@ export const updateProfileFilesController = async (req, res) => {
             }
         }
 
+        // Handle Cover Image Upload
         if (req.files && req.files.coverImg && req.files.coverImg[0]) {
             try {
                 if (user.coverImg) {
@@ -135,7 +137,8 @@ export const updateProfileFilesController = async (req, res) => {
         user = await user.save();
         return res.status(200).json({
             message: "Profile images updated successfully",
-            user
+            profileImg: user.profileImg,
+            coverImg: user.coverImg
         });
 
     } catch (error) {
@@ -144,6 +147,7 @@ export const updateProfileFilesController = async (req, res) => {
     }
 };
 
+// Profile Data Update Controller
 export const updateProfileDataController = async (req, res) => {
     try {
         const { 
@@ -161,30 +165,33 @@ export const updateProfileDataController = async (req, res) => {
             return res.status(404).json({ message: "User not found" });
         }
 
+        // Handle Password Update
         if ((!newPassword && currentPassword) || (!currentPassword && newPassword)) {
             return res.status(400).json({ 
                 error: "Please provide both current password and new password" 
             });
         }
+
         if (currentPassword && newPassword) {
             const isMatch = await bcrypt.compare(currentPassword, user.password);
-           // console.log("Password match result:", isMatch);
             if (!isMatch) {
                 return res.status(400).json({ error: "Current password is incorrect" });
             }
             if (newPassword.length < 6) {
-                return res.status(400).json({
-                    error: "Password must be at least 6 characters long"
+                return res.status(400).json({ 
+                    error: "Password must be at least 6 characters long" 
                 });
             }
-            user.password = newPassword;
+            const salt = await bcrypt.genSalt(10);
+            user.password = await bcrypt.hash(newPassword, salt);
         }
 
-        if ('fullName' in req.body) user.fullName = fullName;
-        if ('email' in req.body) user.email = email;
-        if ('username' in req.body) user.username = username;
-        if ('bio' in req.body) user.bio = bio;
-        if ('link' in req.body) user.link = link;
+        // Update user data
+        user.fullName = fullName || user.fullName;
+        user.email = email || user.email;
+        user.username = username || user.username;
+        user.bio = bio || user.bio;
+        user.link = link || user.link;
 
         user = await user.save();
         user.password = null;

@@ -59,11 +59,7 @@ const EditProfileModal = () => {
 				...prev,
 				newPassword: "",
 				currentPassword: "",
-			  }));
-			  const modal = document.getElementById("edit_profile_modal");
-			  if (modal) {
-				modal.close();
-			  }
+			  }))
 		},
 		onError: (error) => {
 			toast.error(error.message);

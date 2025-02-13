@@ -5,7 +5,6 @@ import toast from "react-hot-toast";
 
 const EditProfileModal = () => {
 	const queryClient = useQueryClient();
-
 	const { data: authUser } = useQuery({ queryKey: ["authUser"] });
 
 	const [formData, setFormData] = useState({
@@ -20,30 +19,20 @@ const EditProfileModal = () => {
 	const { mutateAsync: updateProfile, isPending: isUpdatingProfile } = useMutation({
 		mutationFn: async () => {
 			try {
-				const updatedFields = {};
-        
-				if (formData.fullName !== authUser.user.fullName) {
-				  updatedFields.fullName = formData.fullName;
-				}
-				if (formData.username !== authUser.user.username) {
-				  updatedFields.username = formData.username;
-				}
-				if (formData.email !== authUser.user.email) {
-				  updatedFields.email = formData.email;
-				}
-				if (formData.bio !== authUser.user.bio) {
-				  updatedFields.bio = formData.bio;
-				}
-				if (formData.link !== authUser.user.link) {
-				  updatedFields.link = formData.link;
-				}
-
-				if (formData.newPassword && formData.currentPassword) {
-				  updatedFields.newPassword = formData.newPassword;
-				  updatedFields.currentPassword = formData.currentPassword;
-				}
+                const formDataToSend = new FormData();
+                    formDataToSend.append("fullname",formData.fullName);
+                    formDataToSend.append("username", formData.username);
+					formDataToSend.append("email", formData.email);
+					formDataToSend.append("bio", formData.bio);
+					formDataToSend.append("link", formData.link);
+					formDataToSend.append("newPassword", formData.newPassword);
+					formDataToSend.append("currentPassword", formData.currentPassword);
                
-				const res = await axios.post(`/api/user/updateProfileData`, updatedFields);
+				const res = await axios.post(`/api/user/updateProfile`, formDataToSend, {
+					headers: { 
+						"Content-Type": "multipart/form-data"
+					}
+				});
 				return res.data.user;
 			} catch (error) {
 				throw new Error(error.message);
@@ -55,15 +44,7 @@ const EditProfileModal = () => {
 				queryClient.invalidateQueries({ queryKey: ["authUser"] }),
 				queryClient.invalidateQueries({ queryKey: ["userProfile"] }),
 			]);
-			setFormData(prev => ({
-				...prev,
-				newPassword: "",
-				currentPassword: "",
-			  }));
-			  const modal = document.getElementById("edit_profile_modal");
-			  if (modal) {
-				modal.close();
-			  }
+			
 		},
 		onError: (error) => {
 			toast.error(error.message);
@@ -73,21 +54,6 @@ const EditProfileModal = () => {
 	const handleInputChange = (e) => {
 		setFormData({ ...formData, [e.target.name]: e.target.value });
 	};
-
-	 useEffect(() => {
-		if (authUser) {
-		  setFormData(prevData => ({
-			...prevData,
-			fullName: authUser.user.fullName || "",
-			username: authUser.user.username || "",
-			email: authUser.user.email || "",
-			bio: authUser.user.bio || "",
-			link: authUser.user.link || "",
-			newPassword: "",
-			currentPassword: "",
-		  }));
-		}
-	  }, [authUser]);
 
 	return (
 		<>
@@ -104,7 +70,7 @@ const EditProfileModal = () => {
 						className='flex flex-col gap-4'
 						onSubmit={(e) => {
 							e.preventDefault();
-							updateProfile();
+							updateProfile(formData);
 						}}
 					>
 						<div className='flex flex-wrap gap-2'>

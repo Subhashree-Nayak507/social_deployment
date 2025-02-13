@@ -116,6 +116,7 @@ export const updateProfileFilesController = async (req, res) => {
             }
         }
 
+        // Handle Cover Image Upload
         if (req.files && req.files.coverImg && req.files.coverImg[0]) {
             try {
                 if (user.coverImg) {
@@ -166,9 +167,18 @@ export const updateProfileDataController = async (req, res) => {
                 error: "Please provide both current password and new password" 
             });
         }
+         
+        
         if (currentPassword && newPassword) {
+            // Log before comparison
+            console.log("Attempting to compare:", {
+                providedPassword: currentPassword,
+                storedHash: user.password
+            });
+
             const isMatch = await bcrypt.compare(currentPassword, user.password);
-           // console.log("Password match result:", isMatch);
+            console.log("Password match result:", isMatch);
+
             if (!isMatch) {
                 return res.status(400).json({ error: "Current password is incorrect" });
             }
@@ -177,7 +187,8 @@ export const updateProfileDataController = async (req, res) => {
                     error: "Password must be at least 6 characters long"
                 });
             }
-            user.password = newPassword;
+            user.password = await bcrypt.hash(newPassword, 10);
+            console.log("New hashed password:", user.password);
         }
 
         if ('fullName' in req.body) user.fullName = fullName;

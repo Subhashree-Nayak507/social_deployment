@@ -64,7 +64,7 @@ const ProfilePage = () => {
                 if (coverImg?.file) {
                     formDataToSend.append("coverImg", coverImg.file);
                 }
-				const res = await axios.post(`/api/user/updateProfileFiles`, formDataToSend, {
+				const res = await axios.post(`/api/user/updateProfile`, formDataToSend, {
 					headers: { 
 						"Content-Type": "multipart/form-data"
 					}
@@ -144,13 +144,13 @@ const ProfilePage = () => {
 
                                 <input
                                     type='file'
-                                    hidden
+                                    
                                     ref={coverImgRef}
                                     onChange={(e) => handleImgChange(e, "coverImg")}
                                 />
                                 <input
                                     type='file'
-                                    hidden
+                                    
                                     ref={profileImgRef}
                                     onChange={(e) => handleImgChange(e, "profileImg")}
                                 />
