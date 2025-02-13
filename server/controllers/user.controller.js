@@ -1,7 +1,6 @@
 import Notification from "../models/notification.model.js";
 import User from "../models/user.model.js";
 import cloudinary from "../utils/cloudinary.js";
-import bcrypt from "bcryptjs";
 
 export const getProfileController = async(req,res)=>{
     try{
@@ -23,28 +22,25 @@ export const getProfileController = async(req,res)=>{
     };
 };
 
-export const suggestedUserController = async (req, res) => {
-    try {
-        const currentUser = await User.findById(req.user._id).select("following");
+export const suggestedUserController= async(req,res)=>{
+    try{
+     const CurrentUser= req.user;
+     const followingList = CurrentUser.following;
 
-        if (!currentUser) {
-            return res.status(404).json({ message: "User not found" });
-        }
+     const suggestedUsers = await User.find({
+        _id: { $nin: followingList }, 
+        _id: { $ne: CurrentUser._id } 
+      }).select('-password').limit(5);   
 
-        const suggestedUsers = await User.find({
-            _id: { $nin: [...currentUser.following, req.user._id] } 
-        }).select("-password").limit(7);
-
-        return res.status(200).json({
-            message: "Profiles obtained successfully",
-            suggestedUsers
-        });
-    } catch (error) {
-        console.error("Error:", error);
-        return res.status(500).json({ message: "Internal server error" });
+       return res.status(200).json({  
+        message:"profile obtained successfully",
+        suggestedUsers
+     });
+    }catch(error){
+        console.log("Error :",error);
+        return  res.status(500).json({ message:"Internal server Error"});
     }
 };
-
 
 export const FollowUnfollowUsersController= async(req,res)=>{
     try{
@@ -55,43 +51,32 @@ export const FollowUnfollowUsersController= async(req,res)=>{
         if (id === req.user._id.toString()) {
 			return res.status(400).json({ message: " you can't follow yourself" });
 		};
-		if (!userToModify || !currentUser)
-             return res.status(400).json({ message: "User not found" });
-      
+		if (!userToModify || !currentUser) return res.status(400).json({ message: "User not found" });
 
         const isFollowing = currentUser.following.includes(id);
-       
-        if (isFollowing) {
-            // Unfollow the user
+        if( isFollowing){
+            //if fpollow then follow the user
             await User.findByIdAndUpdate(id, { $pull: { followers: req.user._id } });
-            await User.findByIdAndUpdate(req.user._id, { $pull: { following: id } });
-            
-            return res.status(200).json({ 
-                message: "User unfollowed successfully"
-            });
-        } else {
-            //follow user
+			await User.findByIdAndUpdate(req.user._id, { $pull: { following: id } });
+        }else{
+            // update user to modify and current user followers and following.
             await User.findByIdAndUpdate(id, { $push: { followers: req.user._id } });
-            await User.findByIdAndUpdate(req.user._id, { $push: { following: id } });
-            
-            console.log("followed user");
-            const newNotification = new Notification({
-                type: "follow",
-                from: req.user._id,
-                to: userToModify._id,
-            });
-            await newNotification.save();
+			await User.findByIdAndUpdate(req.user._id, { $push: { following: id } });
 
-            return res.status(200).json({ 
-                message: "User followed successfully",
-            });
-
+        }
+        const newNotification = new Notification({
+            type: "follow",
+            from: req.user._id,
+            to: userToModify._id,
+        });
+        await newNotification.save();
+        
+     return res.status(200).json({ message: "User followed successfully" });
+    }catch(error){
+        console.log("Error :",error);
+        return  res.status(500).json({ message:"Internal server Error"});
     }
-}catch(error){
-    console.log("Error :",error);
-    return  res.status(500).json({ message:"Internal server Error"});
-}
-}
+};
 
 export const updateProfileFilesController = async (req, res) => {
     try {
