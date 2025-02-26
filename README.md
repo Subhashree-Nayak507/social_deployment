@@ -22,7 +22,7 @@ A feature-rich social media application built with React.js, MongoDB, Node.js, E
 
 ### 1. Clone the Repository
 ```bash
-git clone https://github.com/your-username/social_deployment.git
+git clone https://github.com/Subhashree-Nayak507/social_deployment.git
 cd social-deployment
 ```
 
